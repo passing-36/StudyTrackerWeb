@@ -76,6 +76,65 @@ button {
 #saveButton {
     background: #434b57;
 }
+/* リセットボタン */
+.reset-buttons {
+    display: flex;
+    gap: 10px;
+    max-width: 400px;
+    margin: 20px auto 0;
+}
+
+.reset-buttons button {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 6px;
+    font-size: 13px;
+    background: transparent;
+    border: 1px solid #677283;
+}
+
+#resetAllButton {
+    color: #ff9ca9;
+    border-color: #a75b68;
+}
+/* 横画面のときだけ時計モードにする */
+@media screen and (orientation: landscape) {
+
+    /* タイマー以外を非表示 */
+    body > *:not(#timer) {
+        display: none !important;
+    }
+
+    /* 画面全体 */
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* タイマーを中央に大きく表示 */
+    #timer {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        margin: 0;
+        width: max-content;
+        max-width: none;
+
+        font-size: min(10vw, 30vh, 100px);
+        font-weight: bold;
+        line-height: 1;
+        white-space: nowrap;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+}
     </style>
 </head>
 
@@ -99,6 +158,15 @@ button {
 
 <button id="startButton">スタート</button>
 <button id="saveButton">終了・保存</button>
+    <div class="reset-buttons">
+    <button id="resetTodayButton">
+        今日だけリセット
+    </button>
+
+    <button id="resetAllButton">
+        全累計リセット
+    </button>
+</div>
 <script>
     // タイマーの状態
     let running = false;
@@ -205,6 +273,46 @@ saveButton.addEventListener("click", function() {
 updateTotals();
     // 100ミリ秒ごとに画面を更新
     setInterval(updateTimer, 100);
+        // 今日だけリセット
+    document.getElementById("resetTodayButton")
+        .addEventListener("click", function() {
+
+            if (running || elapsedTime > 0) {
+                alert("先に「終了・保存」を押してください。");
+                return;
+            }
+
+            if (confirm("今日の勉強時間をリセットしますか？")) {
+                delete studyData[getToday()];
+
+                localStorage.setItem(
+                    storageKey,
+                    JSON.stringify(studyData)
+                );
+
+                updateTotals();
+            }
+        });
+    // 全累計リセット
+document.getElementById("resetAllButton")
+    .addEventListener("click", function() {
+
+        if (running || elapsedTime > 0) {
+            alert("先に「終了・保存」を押してください。");
+            return;
+        }
+
+        if (confirm("すべての累計勉強時間をリセットしますか？\nこの操作は元に戻せません。")) {
+            studyData = {};
+
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify(studyData)
+            );
+
+            updateTotals();
+        }
+    });
 </script>
 </body>
 </html>
