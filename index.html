@@ -8,7 +8,10 @@
     <title>Study Tracker</title>
 
     <style>
-        /* 全体のデザイン */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background: #20242b;
             color: white;
@@ -18,11 +21,13 @@
             padding: 40px 20px;
         }
 
-        /* コンテンツの横幅 */
-        body > h1,
+        /* 通常画面 */
+        h1,
         body > p,
-        body > #timer,
-        body > .stats {
+        #timer,
+        .stats,
+        .main-buttons,
+        .reset-buttons {
             max-width: 400px;
             margin-left: auto;
             margin-right: auto;
@@ -33,7 +38,6 @@
             margin-bottom: 30px;
         }
 
-        /* タイマー */
         #timer {
             font-size: 48px;
             font-weight: bold;
@@ -42,7 +46,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 勉強時間のカード */
+        /* 勉強時間カード */
         .stats {
             display: flex;
             gap: 10px;
@@ -77,12 +81,10 @@
             cursor: pointer;
         }
 
-        /* スタート・保存ボタン */
+        /* スタート・保存 */
         .main-buttons {
             display: flex;
             gap: 10px;
-            max-width: 400px;
-            margin: 0 auto;
         }
 
         .main-buttons button {
@@ -94,12 +96,11 @@
             background: #434b57;
         }
 
-        /* リセットボタン */
+        /* リセット */
         .reset-buttons {
             display: flex;
             gap: 10px;
-            max-width: 400px;
-            margin: 20px auto 0;
+            margin-top: 20px;
         }
 
         .reset-buttons button {
@@ -117,41 +118,41 @@
         }
 
         /*
-         * 横画面専用の時計モード
-         * スマホの横画面だけに適用
+         * 横画面時計モード
+         *
+         * 時計を画面中央に固定する。
+         * 文字サイズはJavaScriptで安全に調整する。
          */
         @media screen and (orientation: landscape)
                and (max-height: 600px) {
 
             body {
-                margin: 0;
-                padding: 0;
                 width: 100%;
                 height: 100dvh;
+                margin: 0;
+                padding: 0;
                 overflow: hidden;
-                box-sizing: border-box;
             }
 
-            /* タイマー以外を非表示 */
             body > *:not(#timer) {
                 display: none !important;
             }
 
-            /* タイマーを画面の中央に配置 */
             #timer {
                 position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
 
-                font-size: clamp(40px, 11vw, 120px);
-                font-weight: bold;
-                line-height: 1;
-                white-space: nowrap;
-
                 width: max-content;
                 max-width: none;
                 margin: 0;
+                padding: 0;
+
+                font-size: 40px;
+                font-weight: bold;
+                line-height: 1;
+                white-space: nowrap;
                 text-align: center;
                 font-variant-numeric: tabular-nums;
             }
@@ -167,7 +168,7 @@
 
     <div id="timer">00:00:00</div>
 
-    <!-- 勉強時間の表示 -->
+    <!-- 勉強時間カード -->
     <div class="stats">
 
         <div class="stat-card">
@@ -182,13 +183,13 @@
 
     </div>
 
-    <!-- スタート・保存 -->
+    <!-- スタート・保存ボタン -->
     <div class="main-buttons">
         <button id="startButton">スタート</button>
         <button id="saveButton">終了・保存</button>
     </div>
 
-    <!-- リセット -->
+    <!-- リセットボタン -->
     <div class="reset-buttons">
         <button id="resetTodayButton">
             今日だけリセット
@@ -200,29 +201,33 @@
     </div>
 
     <script>
-        // =========================
-        // タイマーの状態
-        // =========================
+        // ==================================
+        // 1. タイマーの基本設定
+        // ==================================
 
         let running = false;
         let startTime = 0;
         let elapsedTime = 0;
 
-        // HTMLの部品を取得
-        const timer = document.getElementById("timer");
+        const timer =
+            document.getElementById("timer");
+
         const startButton =
             document.getElementById("startButton");
+
         const saveButton =
             document.getElementById("saveButton");
 
         const todayTime =
             document.getElementById("todayTime");
+
         const totalTime =
             document.getElementById("totalTime");
 
-        // =========================
-        // 時間を表示用に変換
-        // =========================
+
+        // ==================================
+        // 2. 時間の表示
+        // ==================================
 
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
@@ -237,9 +242,10 @@
                 .join(":");
         }
 
-        // =========================
-        // 経過時間を取得
-        // =========================
+
+        // ==================================
+        // 3. 経過時間の取得
+        // ==================================
 
         function getElapsed() {
             if (running) {
@@ -250,55 +256,96 @@
             return elapsedTime;
         }
 
-        // =========================
-        // タイマー表示の更新
-        // =========================
+
+        // ==================================
+        // 4. タイマー表示の更新
+        // ==================================
 
         function updateTimer() {
-            const newText = formatTime(getElapsed());
+            const display = formatTime(getElapsed());
 
-            if (timer.textContent !== newText) {
-                timer.textContent = newText;
+            if (timer.textContent !== display) {
+                timer.textContent = display;
+                adjustTimerSize();
             }
         }
 
-        // =========================
-        // 横画面の文字サイズを自動調整
-        // =========================
+
+        // ==================================
+        // 5. 横画面の文字サイズを自動調整
+        // ==================================
 
         function adjustTimerSize() {
-    const isLandscape = window.matchMedia(
-        "(orientation: landscape) and (max-height: 600px)"
-    ).matches;
 
-    // 縦画面なら通常表示に戻す
-    if (!isLandscape) {
-        timer.style.fontSize = "";
-        return;
-    }
+            const landscape = window.matchMedia(
+                "(orientation: landscape) and (max-height: 600px)"
+            ).matches;
 
-    // まず小さなサイズで文字の実際の幅を測る
-    timer.style.fontSize = "40px";
+            // 縦画面では通常のCSSに戻す
+            if (!landscape) {
+                timer.style.fontSize = "";
+                return;
+            }
 
-    const textWidth =
-        timer.getBoundingClientRect().width;
+            /*
+             * 画面幅の90%を上限にする。
+             * 画面高さの65%も上限にする。
+             */
+            const availableWidth =
+                document.documentElement.clientWidth * 0.90;
 
-    // 横幅の88%に収まるように調整
-    const availableWidth =
-        document.documentElement.clientWidth * 0.88;
+            const availableHeight =
+                window.innerHeight * 0.65;
 
-    const newSize =
-        40 * availableWidth / textWidth;
+            /*
+             * まず40pxで文字を測定する。
+             * getBoundingClientRect()ではなく
+             * Canvasで文字そのものの幅を測る。
+             */
+            const baseSize = 40;
 
-    // 高さ方向の上限も設定
-    const maxHeightSize =
-        window.innerHeight * 0.45;
+            timer.style.fontSize = baseSize + "px";
 
-    timer.style.fontSize =
-        Math.min(newSize, maxHeightSize) + "px";
-}
+            const canvas =
+                document.createElement("canvas");
 
-        // 画面サイズ・向きが変わったら再調整
+            const context = canvas.getContext("2d");
+
+            const style = window.getComputedStyle(timer);
+
+            context.font =
+                `${style.fontWeight} ${baseSize}px ${style.fontFamily}`;
+
+            const textWidth =
+                context.measureText(timer.textContent).width;
+
+            if (textWidth <= 0) {
+                return;
+            }
+
+            /*
+             * 横幅から計算した文字サイズ。
+             * 高さの上限も守る。
+             */
+            const widthBasedSize =
+                baseSize * availableWidth / textWidth;
+
+            const newSize = Math.max(
+                1,
+                Math.min(
+                    widthBasedSize,
+                    availableHeight
+                )
+            );
+
+            timer.style.fontSize = newSize + "px";
+        }
+
+
+        // ==================================
+        // 6. 画面サイズが変わったら再調整
+        // ==================================
+
         window.addEventListener(
             "resize",
             adjustTimerSize
@@ -309,9 +356,10 @@
             adjustTimerSize
         );
 
-        // =========================
-        // スタート・一時停止・再開
-        // =========================
+
+        // ==================================
+        // 7. スタート・一時停止・再開
+        // ==================================
 
         startButton.addEventListener(
             "click",
@@ -320,10 +368,13 @@
                 if (running) {
                     elapsedTime = getElapsed();
                     running = false;
+
                     startButton.textContent = "再開";
+
                 } else {
                     startTime = Date.now();
                     running = true;
+
                     startButton.textContent = "一時停止";
                 }
 
@@ -331,9 +382,10 @@
             }
         );
 
-        // =========================
-        // 保存データ
-        // =========================
+
+        // ==================================
+        // 8. 保存データ
+        // ==================================
 
         const storageKey = "studyTrackerData";
 
@@ -341,14 +393,20 @@
             localStorage.getItem(storageKey) || "{}"
         );
 
-        // 今日の日付を取得
+
+        // ==================================
+        // 9. 今日の日付
+        // ==================================
+
         function getToday() {
             const now = new Date();
 
             const year = now.getFullYear();
+
             const month = String(
                 now.getMonth() + 1
             ).padStart(2, "0");
+
             const day = String(
                 now.getDate()
             ).padStart(2, "0");
@@ -356,21 +414,24 @@
             return `${year}-${month}-${day}`;
         }
 
-        // =========================
-        // 今日・累計の表示を更新
-        // =========================
+
+        // ==================================
+        // 10. 今日・累計の表示
+        // ==================================
 
         function updateTotals() {
+
             const today = getToday();
 
             const todaySeconds =
                 studyData[today] || 0;
 
             const totalSeconds =
-                Object.values(studyData).reduce(
-                    (sum, seconds) => sum + seconds,
-                    0
-                );
+                Object.values(studyData)
+                    .reduce(
+                        (sum, seconds) => sum + seconds,
+                        0
+                    );
 
             todayTime.textContent =
                 formatTime(todaySeconds);
@@ -379,9 +440,10 @@
                 formatTime(totalSeconds);
         }
 
-        // =========================
-        // 終了・保存
-        // =========================
+
+        // ==================================
+        // 11. 終了・保存
+        // ==================================
 
         saveButton.addEventListener(
             "click",
@@ -395,6 +457,7 @@
                 startButton.textContent = "スタート";
 
                 if (seconds > 0) {
+
                     const today = getToday();
 
                     studyData[today] =
@@ -411,12 +474,16 @@
             }
         );
 
-        // =========================
-        // 今日だけリセット
-        // =========================
 
-        document.getElementById("resetTodayButton")
-            .addEventListener("click", function() {
+        // ==================================
+        // 12. 今日だけリセット
+        // ==================================
+
+        document.getElementById(
+            "resetTodayButton"
+        ).addEventListener(
+            "click",
+            function() {
 
                 if (running || elapsedTime > 0) {
                     alert(
@@ -428,6 +495,7 @@
                 if (confirm(
                     "今日の勉強時間をリセットしますか？"
                 )) {
+
                     delete studyData[getToday()];
 
                     localStorage.setItem(
@@ -437,14 +505,19 @@
 
                     updateTotals();
                 }
-            });
+            }
+        );
 
-        // =========================
-        // 全累計リセット
-        // =========================
 
-        document.getElementById("resetAllButton")
-            .addEventListener("click", function() {
+        // ==================================
+        // 13. 全累計リセット
+        // ==================================
+
+        document.getElementById(
+            "resetAllButton"
+        ).addEventListener(
+            "click",
+            function() {
 
                 if (running || elapsedTime > 0) {
                     alert(
@@ -454,9 +527,9 @@
                 }
 
                 if (confirm(
-                    "すべての累計勉強時間をリセットしますか？\n" +
-                    "この操作は元に戻せません。"
+                    "すべての累計勉強時間をリセットしますか？\nこの操作は元に戻せません。"
                 )) {
+
                     studyData = {};
 
                     localStorage.setItem(
@@ -466,18 +539,22 @@
 
                     updateTotals();
                 }
-            });
+            }
+        );
 
-        // =========================
-        // 起動時の処理
-        // =========================
 
-        updateTimer();
+        // ==================================
+        // 14. 起動時の処理
+        // ==================================
+
         updateTotals();
+        updateTimer();
+        adjustTimerSize();
 
-        // 100ミリ秒ごとにタイマーを更新
+        // 100ミリ秒ごとにタイマー更新
         setInterval(updateTimer, 100);
 
     </script>
+
 </body>
 </html>
