@@ -308,25 +308,6 @@
         Math.min(calculatedSize, maxHeightSize) + "px";
 }
 
-            /*
-             * 横幅から計算した文字サイズ。
-             * 高さの上限も守る。
-             */
-            const widthBasedSize =
-                baseSize * availableWidth / textWidth;
-
-            const newSize = Math.max(
-                1,
-                Math.min(
-                    widthBasedSize,
-                    availableHeight
-                )
-            );
-
-            timer.style.fontSize = newSize + "px";
-        }
-
-
         // ==================================
         // 6. 画面サイズが変わったら再調整
         // ==================================
