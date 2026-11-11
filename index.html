@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Study Tracker</title>
+
+    <style>
+body {
+    background: #20242b;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 40px 20px;
+}
+
+/* 画面全体の横幅を制限 */
+body > h1,
+body > p,
+body > #timer,
+body > .stats {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1 {
+    color: #a78bfa;
+    margin-bottom: 30px;
+}
+
+#timer {
+    font-size: 48px;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+/* 勉強時間のカード */
+.stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: #303742;
+    border-radius: 12px;
+    padding: 15px 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-card p {
+    font-size: 13px;
+    color: #aab4c2;
+}
+
+.stat-card h2 {
+    font-size: 18px;
+}
+
+/* ボタン */
+button {
+    background: #a78bfa;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 25px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#saveButton {
+    background: #434b57;
+}
+    </style>
+</head>
+
+<body>
+    <h1>Study Tracker</h1>
+    <p>現在の勉強時間</p>
+
+    <div id="timer">00:00:00</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <p>今日の勉強</p>
+        <h2 id="todayTime">00:00:00</h2>
+    </div>
+
+    <div class="stat-card">
+        <p>累計勉強時間</p>
+        <h2 id="totalTime">00:00:00</h2>
+    </div>
+</div>
+
+<button id="startButton">スタート</button>
+<button id="saveButton">終了・保存</button>
+<script>
+    // タイマーの状態
+    let running = false;
+    let startTime = 0;
+    let elapsedTime = 0;
+
+    // HTMLの部品を取得
+    const timer = document.getElementById("timer");
+    const startButton = document.getElementById("startButton");
+
+    // 秒数を「時:分:秒」に変換
+    function formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return [hours, minutes, secs]
+            .map(number => String(number).padStart(2, "0"))
+            .join(":");
+    }
+
+    // 現在の経過時間を取得
+    function getElapsed() {
+        if (running) {
+            return elapsedTime + (Date.now() - startTime) / 1000;
+        }
+
+        return elapsedTime;
+    }
+
+    // タイマーの表示を更新
+    function updateTimer() {
+        timer.textContent = formatTime(getElapsed());
+    }
+
+    // ボタンを押したときの処理
+    startButton.addEventListener("click", function() {
+        if (running) {
+            elapsedTime = getElapsed();
+            running = false;
+            startButton.textContent = "再開";
+        } else {
+            startTime = Date.now();
+            running = true;
+            startButton.textContent = "一時停止";
+        }
+
+        updateTimer();
+    });
+// 保存データを読み込む
+const storageKey = "studyTrackerData";
+let studyData = JSON.parse(
+    localStorage.getItem(storageKey) || "{}"
+);
+
+const todayTime = document.getElementById("todayTime");
+const totalTime = document.getElementById("totalTime");
+const saveButton = document.getElementById("saveButton");
+
+// 今日の日付を取得
+function getToday() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// 今日・累計の表示を更新
+function updateTotals() {
+    const today = getToday();
+    const todaySeconds = studyData[today] || 0;
+
+    const totalSeconds = Object.values(studyData)
+        .reduce((sum, seconds) => sum + seconds, 0);
+
+    todayTime.textContent = formatTime(todaySeconds);
+    totalTime.textContent = formatTime(totalSeconds);
+}
+
+// 終了・保存ボタン
+saveButton.addEventListener("click", function() {
+    const seconds = getElapsed();
+
+    running = false;
+    elapsedTime = 0;
+    startButton.textContent = "スタート";
+
+    if (seconds > 0) {
+        const today = getToday();
+        studyData[today] = (studyData[today] || 0) + seconds;
+
+        localStorage.setItem(
+            storageKey,
+            JSON.stringify(studyData)
+        );
+    }
+
+    updateTimer();
+    updateTotals();
+});
+
+// 起動時に保存済みデータを表示
+updateTotals();
+    // 100ミリ秒ごとに画面を更新
+    setInterval(updateTimer, 100);
+</script>
+</body>
+</html>
