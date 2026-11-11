@@ -76,6 +76,13 @@ button {
 #saveButton {
     background: #434b57;
 }
+/* スタート・保存ボタンをリセットと同じ幅にする */
+#startButton,
+#saveButton {
+    width: calc((min(100%, 400px) - 10px) / 2);
+    box-sizing: border-box;
+    padding: 15px 6px;
+}
 /* リセットボタン */
 .reset-buttons {
     display: flex;
@@ -98,7 +105,8 @@ button {
     border-color: #a75b68;
 }
 /* 横画面のときだけ時計モードにする */
-@media screen and (orientation: landscape) {
+@media screen and (orientation: landscape)
+       and (max-height: 600px) {
 
     /* タイマー以外を非表示 */
     body > *:not(#timer) {
@@ -127,7 +135,7 @@ button {
         width: max-content;
         max-width: none;
 
-        font-size: min(10vw, 30vh, 100px);
+        font-size: min(14vw, 45vh, 150px);
         font-weight: bold;
         line-height: 1;
         white-space: nowrap;
