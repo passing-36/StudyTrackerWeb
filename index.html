@@ -276,52 +276,37 @@
         // ==================================
 
         function adjustTimerSize() {
+    const landscape = window.matchMedia(
+        "(orientation: landscape) and (max-height: 600px)"
+    ).matches;
 
-            const landscape = window.matchMedia(
-                "(orientation: landscape) and (max-height: 600px)"
-            ).matches;
+    if (!landscape) {
+        timer.style.fontSize = "";
+        return;
+    }
 
-            // 縦画面では通常のCSSに戻す
-            if (!landscape) {
-                timer.style.fontSize = "";
-                return;
-            }
+    // まず小さな文字サイズに戻す
+    timer.style.fontSize = "40px";
 
-            /*
-             * 画面幅の90%を上限にする。
-             * 画面高さの65%も上限にする。
-             */
-            const availableWidth =
-                document.documentElement.clientWidth * 0.90;
+    // 実際に表示された文字の幅を取得
+    const actualWidth =
+        timer.getBoundingClientRect().width;
 
-            const availableHeight =
-                window.innerHeight * 0.65;
+    // 画面の横幅の90%を使う
+    const availableWidth =
+        document.documentElement.clientWidth * 0.90;
 
-            /*
-             * まず40pxで文字を測定する。
-             * getBoundingClientRect()ではなく
-             * Canvasで文字そのものの幅を測る。
-             */
-            const baseSize = 40;
+    // 文字幅から適切なサイズを計算
+    const calculatedSize =
+        40 * availableWidth / actualWidth;
 
-            timer.style.fontSize = baseSize + "px";
+    // 高さにも余裕を持たせる
+    const maxHeightSize =
+        window.innerHeight * 0.65;
 
-            const canvas =
-                document.createElement("canvas");
-
-            const context = canvas.getContext("2d");
-
-            const style = window.getComputedStyle(timer);
-
-            context.font =
-                `${style.fontWeight} ${baseSize}px ${style.fontFamily}`;
-
-            const textWidth =
-                context.measureText(timer.textContent).width;
-
-            if (textWidth <= 0) {
-                return;
-            }
+    timer.style.fontSize =
+        Math.min(calculatedSize, maxHeightSize) + "px";
+}
 
             /*
              * 横幅から計算した文字サイズ。
