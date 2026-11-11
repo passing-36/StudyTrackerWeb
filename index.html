@@ -104,16 +104,10 @@ button {
     color: #ff9ca9;
     border-color: #a75b68;
 }
-/* 横画面のときだけ時計モードにする */
+/* iPhone横画面：自動中央配置＆サイズ調整 */
 @media screen and (orientation: landscape)
        and (max-height: 600px) {
 
-    /* タイマー以外を非表示 */
-    body > *:not(#timer) {
-        display: none !important;
-    }
-
-    /* 画面全体 */
     body {
         margin: 0;
         padding: 0;
@@ -123,6 +117,32 @@ button {
         overflow: hidden;
         box-sizing: border-box;
     }
+
+    /* タイマー以外は隠す */
+    body > *:not(#timer) {
+        display: none !important;
+    }
+
+    /* 画面中央に固定 */
+    #timer {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+
+        transform: translate(-50%, -50%);
+
+        margin: 0;
+        width: max-content;
+        max-width: none;
+
+        font-size: min(12vw, 45vh, 150px);
+        font-weight: bold;
+        line-height: 1;
+        white-space: nowrap;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+}
 
     /* タイマーを中央に大きく表示 */
 #timer {
