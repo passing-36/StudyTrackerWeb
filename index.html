@@ -267,44 +267,36 @@
         // =========================
 
         function adjustTimerSize() {
-            const isLandscape = window.matchMedia(
-                "(orientation: landscape) and (max-height: 600px)"
-            ).matches;
+    const isLandscape = window.matchMedia(
+        "(orientation: landscape) and (max-height: 600px)"
+    ).matches;
 
-            // 縦画面では通常サイズ
-            if (!isLandscape) {
-                timer.style.fontSize = "";
-                return;
-            }
+    // 縦画面なら通常表示に戻す
+    if (!isLandscape) {
+        timer.style.fontSize = "";
+        return;
+    }
 
-            // 基準サイズを100pxにする
-            timer.style.fontSize = "100px";
+    // まず小さなサイズで文字の実際の幅を測る
+    timer.style.fontSize = "40px";
 
-            // 文字の実際の幅を測る
-            const canvas =
-                document.createElement("canvas");
-            const context = canvas.getContext("2d");
+    const textWidth =
+        timer.getBoundingClientRect().width;
 
-            const style = window.getComputedStyle(timer);
-            context.font = style.font;
+    // 横幅の88%に収まるように調整
+    const availableWidth =
+        document.documentElement.clientWidth * 0.88;
 
-            const textWidth =
-                context.measureText(timer.textContent).width;
+    const newSize =
+        40 * availableWidth / textWidth;
 
-            // 横幅の90%以内に収める
-            const availableWidth =
-                window.innerWidth * 0.9;
+    // 高さ方向の上限も設定
+    const maxHeightSize =
+        window.innerHeight * 0.45;
 
-            const newSize =
-                100 * availableWidth / textWidth;
-
-            // 高さにも余裕を持たせる
-            const maxHeightSize =
-                window.innerHeight * 0.45;
-
-            timer.style.fontSize =
-                Math.min(newSize, maxHeightSize) + "px";
-        }
+    timer.style.fontSize =
+        Math.min(newSize, maxHeightSize) + "px";
+}
 
         // 画面サイズ・向きが変わったら再調整
         window.addEventListener(
