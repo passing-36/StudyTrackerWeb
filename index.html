@@ -144,7 +144,7 @@
                 left: 50%;
                 transform: translate(-50%, -50%);
 
-                font-size: 100px;
+                font-size: clamp(40px, 11vw, 120px);
                 font-weight: bold;
                 line-height: 1;
                 white-space: nowrap;
@@ -474,7 +474,6 @@
 
         updateTimer();
         updateTotals();
-        adjustTimerSize();
 
         // 100ミリ秒ごとにタイマーを更新
         setInterval(updateTimer, 100);
