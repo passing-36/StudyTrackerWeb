@@ -129,9 +129,13 @@ button {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
 
-    font-size: min(11vw, 40vh, 140px);
+    /* 中央配置しながら横幅を少し圧縮 */
+    transform: translate(-50%, -50%) scaleX(0.88);
+    transform-origin: center;
+
+    /* 文字を大きくする */
+    font-size: min(15vw, 48vh, 170px);
     font-weight: bold;
     line-height: 1;
     white-space: nowrap;
